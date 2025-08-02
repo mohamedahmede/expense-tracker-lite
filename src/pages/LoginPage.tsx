@@ -1,7 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LoginHeader, LoginForm, LoginContainer, LoginFooter } from '../components/loginPage';
-import type { LoginFormValues } from '../components/loginPage';
+import LoginHeader from '../components/loginPage/LoginHeader';
+import LoginForm from '../components/loginPage/LoginForm';
+import LoginContainer from '../components/loginPage/LoginContainer';
+import LoginFooter from '../components/loginPage/LoginFooter';
+import type { LoginFormValues } from '../components/loginPage/LoginForm';
 
 const LoginPage = () => {
   const navigate = useNavigate();

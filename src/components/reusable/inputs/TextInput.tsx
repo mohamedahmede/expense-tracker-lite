@@ -6,43 +6,31 @@ import type { TextInputProps } from '../../../types/inputTypes';
 const TextInput: React.FC<TextInputProps> = ({
   name,
   label,
+  type = "text",
   placeholder,
-  type = 'text',
-  disabled = false,
-  className = ''
+  required = false,
+  className = ""
 }) => {
   return (
-    <div className="">
-      {label && (
-        <label htmlFor={name} className="block text-md font-semibold mb-2">
-          {label}
-        </label>
-      )}
+    <div className={className}>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <Field name={name}>
         {({ field, meta }: FieldProps) => (
           <div>
             <input
               {...field}
               type={type}
-              id={name}
               placeholder={placeholder}
-              disabled={disabled}
-              className={`
-                w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                ${meta.touched && meta.error 
-                  ? 'border-red-500 bg-red-50' 
-                  : 'border-gray-300'
-                }
-                style={{ backgroundColor: meta.touched && meta.error ? undefined : '#eff3f6' }}
-                ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}
-                ${className}
-              `}
+              className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-input-bg ${
+                meta.touched && meta.error ? 'border-red-500' : ''
+              }`}
             />
-            <div className="h-5 mt-1">
-              {meta.touched && meta.error && (
-                <p className="text-sm text-red-600">{meta.error}</p>
-              )}
-            </div>
+            {meta.touched && meta.error && (
+              <p className="text-red-500 text-xs mt-1">{meta.error}</p>
+            )}
           </div>
         )}
       </Field>
