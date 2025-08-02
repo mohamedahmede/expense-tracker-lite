@@ -27,7 +27,7 @@ const initializeExpenses = (): Expense[] => {
 // Get all expenses (sorted by date, newest first)
 export const getExpenses = (): Expense[] => {
   const expenses = initializeExpenses();
-  return expenses.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
 // Add a new expense
@@ -100,6 +100,71 @@ export const getExpensesByDateRange = (startDate: string, endDate: string): Expe
     const end = new Date(endDate);
     return expenseDate >= start && expenseDate <= end;
   });
+};
+
+// Get expenses filtered by time period
+export const getExpensesByPeriod = (period: 'today' | 'this-week' | 'this-month' | 'this-year' | 'all'): Expense[] => {
+  const allExpenses = getExpenses();
+  
+  console.log('Filtering for period:', period, 'Total expenses:', allExpenses.length);
+  
+  if (period === 'all') {
+    console.log('Returning all expenses:', allExpenses.length);
+    return allExpenses;
+  }
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  const filteredExpenses = allExpenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    const expenseDateOnly = new Date(expenseDate.getFullYear(), expenseDate.getMonth(), expenseDate.getDate());
+    
+    switch (period) {
+      case 'today': {
+        const isToday = expenseDateOnly.getTime() === today.getTime();
+        console.log('Today check:', expenseDateOnly, today, isToday);
+        return isToday;
+      }
+      
+      case 'this-week': {
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        const inWeek = expenseDateOnly >= startOfWeek && expenseDateOnly <= endOfWeek;
+        console.log('Week check:', expenseDateOnly, startOfWeek, endOfWeek, inWeek);
+        return inWeek;
+      }
+      
+      case 'this-month': {
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const inMonth = expenseDateOnly >= startOfMonth && expenseDateOnly <= endOfMonth;
+        console.log('Month check:', expenseDateOnly, startOfMonth, endOfMonth, inMonth);
+        return inMonth;
+      }
+      
+      case 'this-year': {
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const endOfYear = new Date(now.getFullYear(), 11, 31);
+        const inYear = expenseDateOnly >= startOfYear && expenseDateOnly <= endOfYear;
+        console.log('Year check:', expenseDateOnly, startOfYear, endOfYear, inYear);
+        return inYear;
+      }
+      
+      default:
+        return true;
+    }
+  });
+  
+  console.log('Filtered expenses for', period, ':', filteredExpenses.length);
+  return filteredExpenses;
+};
+
+// Get total expenses for a specific period
+export const getTotalExpensesByPeriod = (period: 'today' | 'this-week' | 'this-month' | 'this-year' | 'all'): number => {
+  return getExpensesByPeriod(period).reduce((total, expense) => total + expense.amount, 0);
 };
 
 // Generate unique expense ID

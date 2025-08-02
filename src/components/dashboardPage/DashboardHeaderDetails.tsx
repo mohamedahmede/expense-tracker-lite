@@ -1,4 +1,20 @@
-const DashboardHeaderDetails = () => {
+import { useMemo } from "react";
+import { getTotalExpensesByPeriod } from "../../data/expenses";
+import type { FilterPeriod } from "./DashboardHeader";
+
+interface DashboardHeaderDetailsProps {
+  selectedFilter: FilterPeriod;
+}
+
+const DashboardHeaderDetails: React.FC<DashboardHeaderDetailsProps> = ({ selectedFilter }) => {
+  const totalExpenses = useMemo(() => {
+    return getTotalExpensesByPeriod(selectedFilter);
+  }, [selectedFilter]);
+  
+  // For demo purposes, we'll show income as 2x expenses
+  const totalIncome = totalExpenses * 2;
+  const totalBalance = totalIncome - totalExpenses;
+
 	return (
 		<div className="py-6">
 			<div className="bg-[#496ef3] absolute bottom-[-5rem] left-0 w-full h-full rounded-2xl p-6 relative overflow-hidden shadow-xl">
@@ -9,11 +25,10 @@ const DashboardHeaderDetails = () => {
 				<div className="relative z-10">
 					<div className="flex justify-between items-start mb-4">
 						<h2 className="text-white font-medium">Total Balance</h2>
-						
 					</div>
 
 					<div className="text-white mb-6">
-						<span className="text-3xl font-bold">$ 2,548.00</span>
+						<span className="text-3xl font-bold">$ {totalBalance.toFixed(2)}</span>
 					</div>
 
 					<div className="grid grid-cols-2 gap-4">
@@ -34,8 +49,8 @@ const DashboardHeaderDetails = () => {
 								</svg>
 							</div>
 							<div>
-								<p className="text-white/80 text-xs">↓ Income</p>
-								<p className="text-white font-semibold">$ 10,840.00</p>
+								<p className="text-white/80 text-xs">Income</p>
+								<p className="text-white font-semibold">$ {totalIncome.toFixed(2)}</p>
 							</div>
 						</div>
 
@@ -56,8 +71,8 @@ const DashboardHeaderDetails = () => {
 								</svg>
 							</div>
 							<div>
-								<p className="text-white/80 text-xs">↑ Expenses</p>
-								<p className="text-white font-semibold">$ 1,884.00</p>
+								<p className="text-white/80 text-xs">Expenses</p>
+								<p className="text-white font-semibold">$ {totalExpenses.toFixed(2)}</p>
 							</div>
 						</div>
 					</div>

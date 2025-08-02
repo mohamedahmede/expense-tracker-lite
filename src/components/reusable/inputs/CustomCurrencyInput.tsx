@@ -62,6 +62,19 @@ const CustomCurrencyInput: React.FC<CustomCurrencyInputProps> = ({
     }
   };
 
+  // Handle input validation for positive numbers only
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const value = e.target.value;
+    
+    // Allow only numbers, decimal point, and backspace
+    const regex = /^[0-9]*\.?[0-9]*$/;
+    
+    if (value === '' || regex.test(value)) {
+      // Update the field value
+      field.onChange(e);
+    }
+  };
+
   return (
     <div className={className}>
       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -76,6 +89,13 @@ const CustomCurrencyInput: React.FC<CustomCurrencyInputProps> = ({
                 {...field}
                 type="text"
                 placeholder={placeholder}
+                onChange={(e) => handleInputChange(e, field)}
+                onKeyDown={(e) => {
+                  // Prevent minus sign
+                  if (e.key === '-') {
+                    e.preventDefault();
+                  }
+                }}
                 className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-input-bg pr-20 ${
                   meta.touched && meta.error ? 'border-red-500' : ''
                 }`}

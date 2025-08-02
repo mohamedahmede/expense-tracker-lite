@@ -207,22 +207,7 @@ const AddCategoryPopup: React.FC<AddCategoryPopupProps> = ({
 									</div>
 								</div>
 
-								{/* Preview */}
-								{selectedIcon && (
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Preview
-										</label>
-										<div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
-											<div className={`w-10 h-10 ${selectedColor.bg} rounded-full flex items-center justify-center`}>
-												<svg className={`w-5 h-5 ${selectedColor.text}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={selectedIcon} />
-												</svg>
-											</div>
-											<span className="text-gray-700">New Category</span>
-										</div>
-									</div>
-								)}
+				
 
 								{/* Buttons */}
 								<div className="flex space-x-3 pt-4">

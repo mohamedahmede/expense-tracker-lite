@@ -29,7 +29,17 @@ export interface AddExpenseFormValues {
 
 const AddExpenseSchema = Yup.object().shape({
   category: Yup.string().required('Category is required'),
-  amount: Yup.string().required('Amount is required'),
+  amount: Yup.string()
+    .required('Amount is required')
+    .test('is-positive', 'Amount must be positive', (value) => {
+      if (!value) return false;
+      const num = parseFloat(value);
+      return !isNaN(num) && num > 0;
+    })
+    .test('is-valid-number', 'Please enter a valid number', (value) => {
+      if (!value) return false;
+      return !isNaN(parseFloat(value));
+    }),
   date: Yup.string().required('Date is required'),
   currency: Yup.string().required('Currency is required'),
 });
@@ -237,7 +247,7 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
                       <label className="block text-sm font-medium text-gray-700 mb-4">
                         Categories
                       </label>
-                      <div className="grid grid-cols-4 gap-4">
+                      <div className="grid grid-cols-4 gap-3">
                         {expenseTypes.map((type) => (
                           <button
                             key={type.id}
@@ -246,7 +256,7 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
                               handleCategorySelect(type.id);
                               setFieldValue('category', type.id);
                             }}
-                            className={`flex flex-col items-center space-y-2 p-3 rounded-lg transition-all ${
+                            className={`flex flex-col items-center space-y-2 p-3 rounded-lg transition-all w-full min-w-0 ${
                               selectedCategory === type.id
                                 ? 'bg-primary text-white'
                                 : `${type.bgColor} hover:scale-105`
@@ -266,9 +276,9 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={type.iconPath} />
                               </svg>
                             </div>
-                            <span className={`text-xs font-medium ${
+                            <span className={`text-xs font-medium truncate w-full text-center ${
                               selectedCategory === type.id ? 'text-white' : 'text-gray-700'
-                            }`}>
+                            }`} title={type.name}>
                               {type.name}
                             </span>
                           </button>
@@ -278,14 +288,16 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
                         <button
                           type="button"
                           onClick={() => setIsAddCategoryOpen(true)}
-                          className="flex flex-col items-center space-y-2 p-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-primary hover:bg-gray-50 transition-all"
+                          className="flex flex-col items-center space-y-2 p-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-primary hover:bg-gray-50 transition-all w-full min-w-0"
                         >
                           <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
                             <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
                           </div>
-                          <span className="text-xs font-medium text-gray-600">Add Category</span>
+                          <span className="text-xs font-medium text-gray-600 truncate w-full text-center" title="Add Category">
+                            Add Category
+                          </span>
                         </button>
                       </div>
                     </div>
