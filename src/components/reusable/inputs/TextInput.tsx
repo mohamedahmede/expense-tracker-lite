@@ -8,7 +8,6 @@ const TextInput: React.FC<TextInputProps> = ({
   label,
   placeholder,
   type = 'text',
-  required = false,
   disabled = false,
   className = ''
 }) => {
@@ -17,7 +16,6 @@ const TextInput: React.FC<TextInputProps> = ({
       {label && (
         <label htmlFor={name} className="block text-md font-semibold mb-2">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <Field name={name}>

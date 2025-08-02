@@ -4,7 +4,6 @@ export interface TextInputProps {
   label?: string;
   type?: string;
   placeholder?: string;
-  required?: boolean;
   disabled?: boolean;
   className?: string;
 }
@@ -14,7 +13,6 @@ export interface PasswordFieldProps {
   name: string;
   label?: string;
   placeholder?: string;
-  required?: boolean;
   disabled?: boolean;
   className?: string;
 }
