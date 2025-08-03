@@ -26,6 +26,9 @@ const AddCategoryPopup: React.FC<AddCategoryPopupProps> = ({
 	useEffect(() => {
 		if (isOpen) {
 			setIsClosing(false);
+			// Reset form state when popup opens
+			setSelectedIcon("");
+			setSelectedColor({ bg: "bg-gray-100", text: "text-gray-600" });
 			if (modalRef.current) {
 				gsap.fromTo(modalRef.current, 
 					{ opacity: 0 },
@@ -82,52 +85,65 @@ const AddCategoryPopup: React.FC<AddCategoryPopupProps> = ({
 							handleClose();
 						}}
 					>
-						{({ isSubmitting, isValid, values, setFieldValue }) => (
-							<Form className="space-y-6">
-								<TextInput
-									name="name"
-									label="Category Name"
-									placeholder="Enter category name"
-									required
-								/>
+						{({ isSubmitting, values, setFieldValue }) => {
+							// Check if form is complete
+							const isFormComplete = values.name.trim() && selectedIcon && selectedColor.bg && selectedColor.text;
+							
+							// Debug logging
+							console.log('Form state:', {
+								name: values.name.trim(),
+								selectedIcon,
+								selectedColor,
+								isFormComplete
+							});
+							
+							return (
+								<Form className="space-y-6">
+									<TextInput
+										name="name"
+										label="Category Name"
+										placeholder="Enter category name"
+										required
+									/>
 
-								<IconSelector
-									selectedIcon={selectedIcon}
-									onIconSelect={(iconPath) => {
-										setSelectedIcon(iconPath);
-										setFieldValue("iconPath", iconPath);
-									}}
-								/>
+									<IconSelector
+										selectedIcon={selectedIcon}
+										onIconSelect={(iconPath) => {
+											setSelectedIcon(iconPath);
+											setFieldValue("iconPath", iconPath);
+										}}
+									/>
 
-								<ColorSelector
-									selectedColor={selectedColor}
-									onColorSelect={(color) => {
-										setSelectedColor(color);
-										setFieldValue("bgColor", color.bg);
-										setFieldValue("textColor", color.text);
-									}}
-								/>
+									<ColorSelector
+										selectedColor={selectedColor}
+										onColorSelect={(color) => {
+											setSelectedColor(color);
+											setFieldValue("bgColor", color.bg);
+											setFieldValue("textColor", color.text);
+										}}
+									/>
 
-								<div className="flex space-x-3 pt-4">
-									<button
-										type="button"
-										onClick={handleClose}
-										className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-									>
-										Cancel
-									</button>
-									<CTAButton
-										type="submit"
-										disabled={!isValid || !selectedIcon || !values.name.trim()}
-										loading={isSubmitting}
-										loadingText="Adding..."
-										className="flex-1"
-									>
-										Add
-									</CTAButton>
-								</div>
-							</Form>
-						)}
+									<div className="flex space-x-3 pt-4">
+										<button
+											type="button"
+											onClick={handleClose}
+											className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+										>
+											Cancel
+										</button>
+										<CTAButton
+											type="submit"
+											disabled={!isFormComplete}
+											loading={isSubmitting}
+											loadingText="Adding..."
+											className="flex-1"
+										>
+											Add
+										</CTAButton>
+									</div>
+								</Form>
+							);
+						}}
 					</Formik>
 				</div>
 			</div>

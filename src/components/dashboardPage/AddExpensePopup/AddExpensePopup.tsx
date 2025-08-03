@@ -55,11 +55,7 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 		};
 	}, [isOpen]);
 
-	useEffect(() => {
-		if (selectedCategory && isOpen && setFieldValueRef.current) {
-			setFieldValueRef.current("category", selectedCategory);
-		}
-	}, [selectedCategory, isOpen]);
+
 
 	const handleSubmit = async (values: AddExpenseFormValues) => {
 		if (isSubmitting) return;
@@ -172,11 +168,15 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 						<Formik
 							key={expenseTypes.length}
 							initialValues={initialValues}
-							validationSchema={AddExpenseSchema}
 							onSubmit={handleSubmit}
 						>
 							{(formikProps) => {
 								setFieldValueRef.current = formikProps.setFieldValue;
+								
+								// Check if form is complete
+								const isFormComplete = formikProps.values.amount && 
+									formikProps.values.date && 
+									selectedCategory;
 
 								return (
 									<Form className="space-y-2">
@@ -199,7 +199,7 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 
 										<CTAButton
 											type="submit"
-											disabled={!formikProps.isValid || !selectedCategory}
+											disabled={!isFormComplete}
 											loading={isSubmitting}
 											loadingText="Saving..."
 											className="w-full"
@@ -233,11 +233,15 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 						<Formik
 							key={expenseTypes.length}
 							initialValues={initialValues}
-							validationSchema={AddExpenseSchema}
 							onSubmit={handleSubmit}
 						>
 							{(formikProps) => {
 								setFieldValueRef.current = formikProps.setFieldValue;
+								
+								// Check if form is complete
+								const isFormComplete = formikProps.values.amount && 
+									formikProps.values.date && 
+									selectedCategory;
 
 								return (
 									<Form className="space-y-4">
@@ -260,7 +264,7 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 
 										<CTAButton
 											type="submit"
-											disabled={!formikProps.isValid || !selectedCategory}
+											disabled={!isFormComplete}
 											loading={isSubmitting}
 											loadingText="Saving..."
 											className="w-full"
