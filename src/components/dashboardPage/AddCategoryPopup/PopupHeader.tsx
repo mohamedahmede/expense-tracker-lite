@@ -15,14 +15,12 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({ title, onClose, isOpen, isClo
 	useEffect(() => {
 		if (isOpen && titleRef.current && !hasAnimated.current) {
 			hasAnimated.current = true;
-			// Fade in the title when popup opens
 			gsap.fromTo(titleRef.current,
 				{ opacity: 0 },
 				{ opacity: 1, duration: 0.3, delay: 0.2, ease: "power2.out" }
 			);
 		} else if (isClosing && titleRef.current && hasAnimated.current) {
 			hasAnimated.current = false;
-			// Fade out the title when popup starts closing
 			gsap.to(titleRef.current, {
 				opacity: 0,
 				duration: 0.15,

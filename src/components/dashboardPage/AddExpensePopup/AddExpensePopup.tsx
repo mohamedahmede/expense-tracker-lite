@@ -33,10 +33,8 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 		if (isOpen) {
 			setIsClosing(false);
 			document.body.style.overflow = "hidden";
-			// Load fresh categories when popup opens
 			setExpenseTypes(getExpenseTypeList());
 			
-			// Animate mobile popup - slide from left to right
 			if (modalRef.current) {
 				gsap.fromTo(modalRef.current, 
 					{ opacity: 0, x: -100 },
@@ -44,7 +42,6 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 				);
 			}
 			
-			// Animate desktop popup - simple fade in
 			if (desktopModalRef.current) {
 				gsap.fromTo(desktopModalRef.current, 
 					{ opacity: 0 },
@@ -58,7 +55,6 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 		};
 	}, [isOpen]);
 
-	// Update form field when selectedCategory changes
 	useEffect(() => {
 		if (selectedCategory && isOpen && setFieldValueRef.current) {
 			setFieldValueRef.current("category", selectedCategory);
@@ -70,13 +66,11 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 
 		setIsSubmitting(true);
 		try {
-			// Convert receipt file to base64 if present
 			let receiptBase64: string | undefined;
 			if (values.receipt) {
 				receiptBase64 = await fileToBase64(values.receipt);
 			}
 
-			// Create expense object
 			const expenseData = {
 				category: selectedCategory,
 				amount: parseFloat(values.amount),
@@ -85,23 +79,16 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 				receipt: receiptBase64,
 			};
 
-			// Add to localStorage with currency conversion
 			const newExpense = await addExpense(expenseData);
-
-			// Call parent onSubmit
 			onSubmit(values);
 
-			// Reset form state
 			setSelectedCategory("");
 			setSelectedCurrency("USD");
-
-			// Close popup
 			handleClose();
 
 			console.log("Expense added successfully:", newExpense);
 		} catch (error) {
 			console.error("Error adding expense:", error);
-			// You could show an error message to the user here
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -121,12 +108,8 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 		};
 
 		addExpenseType(newCategory);
-		// Refresh the categories list after adding new category
 		setExpenseTypes(getExpenseTypeList());
 		setSelectedCategory(newCategory.id);
-
-		// We need to update the Formik form field as well
-		// This will be handled by the Formik render prop
 	};
 
 	const handleCurrencyChange = (currencyCode: string) => {
@@ -137,14 +120,12 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 		if (!isClosing) {
 			setIsClosing(true);
 			
-			// Animate exit for mobile - slide from right to left
 			if (modalRef.current) {
 				gsap.to(modalRef.current, {
 					x: "-100%",
 					duration: 0.4,
 					ease: "power3.in",
 					onComplete: () => {
-						// Fade out after slide completes
 						gsap.to(modalRef.current, {
 							opacity: 0,
 							duration: 0.2,
@@ -158,7 +139,6 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 					}
 				});
 			} else {
-				// Animate exit for desktop
 				if (desktopModalRef.current) {
 					gsap.to(desktopModalRef.current, {
 						opacity: 0,
@@ -190,13 +170,12 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 
 					<div className="flex-1 p-6 overflow-y-auto">
 						<Formik
-							key={expenseTypes.length} // Reset form when categories change
+							key={expenseTypes.length}
 							initialValues={initialValues}
 							validationSchema={AddExpenseSchema}
 							onSubmit={handleSubmit}
 						>
 							{(formikProps) => {
-								// Store setFieldValue in ref for use in handleAddCategory
 								setFieldValueRef.current = formikProps.setFieldValue;
 
 								return (
@@ -252,13 +231,12 @@ const AddExpensePopup: React.FC<AddExpensePopupProps> = ({
 
 					<div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
 						<Formik
-							key={expenseTypes.length} // Reset form when categories change
+							key={expenseTypes.length}
 							initialValues={initialValues}
 							validationSchema={AddExpenseSchema}
 							onSubmit={handleSubmit}
 						>
 							{(formikProps) => {
-								// Store setFieldValue in ref for use in handleAddCategory
 								setFieldValueRef.current = formikProps.setFieldValue;
 
 								return (

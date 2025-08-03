@@ -33,10 +33,6 @@ const AddCategoryPopup: React.FC<AddCategoryPopupProps> = ({
 				);
 			}
 		}
-
-		return () => {
-			// Cleanup
-		};
 	}, [isOpen]);
 
 	const handleClose = () => {
