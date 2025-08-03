@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Formik, Form } from "formik";
+import { gsap } from "gsap";
 import { TextInput } from "../../../types/inputTypes";
 import { CTAButton } from "../../../types/buttonTypes";
 import type { AddCategoryPopupProps } from "../../../types/addCategoryPopupTypes";
@@ -18,15 +19,59 @@ const AddCategoryPopup: React.FC<AddCategoryPopupProps> = ({
 		bg: string;
 		text: string;
 	}>({ bg: "bg-gray-100", text: "text-gray-600" });
+	
+	const [isClosing, setIsClosing] = useState(false);
+	const modalRef = useRef<HTMLDivElement>(null);
 
-	if (!isOpen) return null;
+	useEffect(() => {
+		if (isOpen) {
+			setIsClosing(false);
+			if (modalRef.current) {
+				gsap.fromTo(modalRef.current, 
+					{ opacity: 0 },
+					{ opacity: 1, duration: 0.4, ease: "power3.out" }
+				);
+			}
+		}
+
+		return () => {
+			// Cleanup
+		};
+	}, [isOpen]);
+
+	const handleClose = () => {
+		if (!isClosing) {
+			setIsClosing(true);
+			
+			// First fade out the title, then fade out the popup
+			if (modalRef.current) {
+				// Wait a bit for title fade out, then fade out popup
+				setTimeout(() => {
+					gsap.to(modalRef.current, {
+						opacity: 0,
+						duration: 0.3,
+						ease: "power2.in",
+						onComplete: () => {
+							setIsClosing(false);
+							onClose();
+						}
+					});
+				}, 200); // Wait 200ms for title fade out
+			} else {
+				setIsClosing(false);
+				onClose();
+			}
+		}
+	};
+
+	if (!isOpen && !isClosing) return null;
 
 	return (
 		<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-			<div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-				<PopupHeader title="Add New Category" onClose={onClose} />
+			<div ref={modalRef} className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-hidden">
+				<PopupHeader title="Add New Category" onClose={handleClose} isOpen={isOpen} isClosing={isClosing} />
 
-				<div className="p-6">
+				<div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
 					<Formik
 						initialValues={initialValues}
 						validationSchema={AddCategorySchema}
@@ -38,7 +83,7 @@ const AddCategoryPopup: React.FC<AddCategoryPopupProps> = ({
 								textColor: selectedColor.text,
 							};
 							onSubmit(formData);
-							onClose();
+							handleClose();
 						}}
 					>
 						{({ isSubmitting, isValid, values, setFieldValue }) => (
@@ -70,7 +115,7 @@ const AddCategoryPopup: React.FC<AddCategoryPopupProps> = ({
 								<div className="flex space-x-3 pt-4">
 									<button
 										type="button"
-										onClick={onClose}
+										onClick={handleClose}
 										className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
 									>
 										Cancel
