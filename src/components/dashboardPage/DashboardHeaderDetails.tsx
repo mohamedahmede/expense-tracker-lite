@@ -1,19 +1,26 @@
 import { useMemo } from "react";
-import { getTotalExpensesByPeriod } from "../../data/expenses";
+import { getTotalExpensesByPeriodUSD } from "../../data/expenses";
 import type { FilterPeriod } from "./DashboardHeader";
 
 interface DashboardHeaderDetailsProps {
   selectedFilter: FilterPeriod;
+  refreshTrigger: number;
 }
 
-const DashboardHeaderDetails: React.FC<DashboardHeaderDetailsProps> = ({ selectedFilter }) => {
-  const totalExpenses = useMemo(() => {
-    return getTotalExpensesByPeriod(selectedFilter);
-  }, [selectedFilter]);
+const DashboardHeaderDetails: React.FC<DashboardHeaderDetailsProps> = ({ selectedFilter, refreshTrigger }) => {
+  // Get filtered expenses for display
+  const filteredExpensesUSD = useMemo(() => {
+    return getTotalExpensesByPeriodUSD(selectedFilter) || 0;
+  }, [selectedFilter, refreshTrigger]);
+
+  // Get ALL expenses for total balance calculation
+  const allExpensesUSD = useMemo(() => {
+    return getTotalExpensesByPeriodUSD('all') || 0;
+  }, [refreshTrigger]);
   
-  // For demo purposes, we'll show income as 2x expenses
-  const totalIncome = totalExpenses * 2;
-  const totalBalance = totalIncome - totalExpenses;
+  // Set income to $10,000 by default
+  const totalIncomeUSD = 10000;
+  const totalBalanceUSD = totalIncomeUSD - allExpensesUSD;
 
 	return (
 		<div className="py-6">
@@ -28,7 +35,7 @@ const DashboardHeaderDetails: React.FC<DashboardHeaderDetailsProps> = ({ selecte
 					</div>
 
 					<div className="text-white mb-6">
-						<span className="text-3xl font-bold">$ {totalBalance.toFixed(2)}</span>
+						<span className="text-3xl font-bold">$ {totalBalanceUSD.toFixed(2)}</span>
 					</div>
 
 					<div className="grid grid-cols-2 gap-4">
@@ -50,7 +57,7 @@ const DashboardHeaderDetails: React.FC<DashboardHeaderDetailsProps> = ({ selecte
 							</div>
 							<div>
 								<p className="text-white/80 text-xs">Income</p>
-								<p className="text-white font-semibold">$ {totalIncome.toFixed(2)}</p>
+								<p className="text-white font-semibold">$ {totalIncomeUSD.toFixed(2)}</p>
 							</div>
 						</div>
 
@@ -72,7 +79,7 @@ const DashboardHeaderDetails: React.FC<DashboardHeaderDetailsProps> = ({ selecte
 							</div>
 							<div>
 								<p className="text-white/80 text-xs">Expenses</p>
-								<p className="text-white font-semibold">$ {totalExpenses.toFixed(2)}</p>
+								<p className="text-white font-semibold">$ {filteredExpensesUSD.toFixed(2)}</p>
 							</div>
 						</div>
 					</div>

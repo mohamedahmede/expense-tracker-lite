@@ -31,7 +31,10 @@ const CustomDateInput: React.FC<CustomDateInputProps> = ({
   }, []);
 
   const formatDate = (date: Date): string => {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const getDaysInMonth = (year: number, month: number): number => {
@@ -63,12 +66,18 @@ const CustomDateInput: React.FC<CustomDateInputProps> = ({
   const [currentDate, setCurrentDate] = useState(new Date());
   const calendarDays = generateCalendarDays(currentDate.getFullYear(), currentDate.getMonth());
 
+  // Get today's date for comparison
+  const today = new Date();
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth();
+  const todayDay = today.getDate();
+
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  const handleDateSelect = (day: number, form: any) => {
+  const handleDateSelect = (day: number, form: FieldProps['form']) => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(newDate);
     form.setFieldValue(name, formatDate(newDate));
@@ -76,7 +85,33 @@ const CustomDateInput: React.FC<CustomDateInputProps> = ({
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + (direction === 'next' ? 1 : -1), 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + (direction === 'next' ? 1 : -1), 1);
+    
+    // Don't allow navigating to future months
+    if (direction === 'next') {
+      const nextMonth = new Date(todayYear, todayMonth + 1, 1);
+      if (newDate >= nextMonth) {
+        return;
+      }
+    }
+    
+    setCurrentDate(newDate);
+  };
+
+  // Check if a date is in the future
+  const isFutureDate = (day: number): boolean => {
+    if (currentDate.getFullYear() > todayYear) return true;
+    if (currentDate.getFullYear() < todayYear) return false;
+    if (currentDate.getMonth() > todayMonth) return true;
+    if (currentDate.getMonth() < todayMonth) return false;
+    return day > todayDay;
+  };
+
+  // Check if a date is today
+  const isToday = (day: number): boolean => {
+    return currentDate.getFullYear() === todayYear && 
+           currentDate.getMonth() === todayMonth && 
+           day === todayDay;
   };
 
   return (
@@ -126,9 +161,14 @@ const CustomDateInput: React.FC<CustomDateInputProps> = ({
                     <button
                       type="button"
                       onClick={() => navigateMonth('next')}
-                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      disabled={currentDate.getFullYear() >= todayYear && currentDate.getMonth() >= todayMonth}
+                      className={`p-1 rounded transition-colors ${
+                        currentDate.getFullYear() >= todayYear && currentDate.getMonth() >= todayMonth
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'hover:bg-gray-100 text-gray-600'
+                      }`}
                     >
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
@@ -152,15 +192,19 @@ const CustomDateInput: React.FC<CustomDateInputProps> = ({
                           key={index}
                           type="button"
                           onClick={() => day && handleDateSelect(day, form)}
-                          disabled={!day}
+                          disabled={!day || isFutureDate(day)}
                           className={`w-8 h-8 text-sm rounded-full transition-colors ${
                             !day 
                               ? 'invisible' 
-                              : day === selectedDate?.getDate() && 
-                                currentDate.getMonth() === selectedDate?.getMonth() &&
-                                currentDate.getFullYear() === selectedDate?.getFullYear()
-                                ? 'bg-primary text-white'
-                                : 'hover:bg-gray-100 text-gray-700'
+                              : isFutureDate(day)
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : isToday(day)
+                                  ? 'bg-blue-500 text-white font-semibold'
+                                  : day === selectedDate?.getDate() && 
+                                    currentDate.getMonth() === selectedDate?.getMonth() &&
+                                    currentDate.getFullYear() === selectedDate?.getFullYear()
+                                    ? 'bg-primary text-white'
+                                    : 'hover:bg-gray-100 text-gray-700'
                           }`}
                         >
                           {day}

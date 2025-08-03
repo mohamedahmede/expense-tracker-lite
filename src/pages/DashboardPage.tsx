@@ -1,93 +1,159 @@
-import  { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import ExpenseItem from "../components/dashboardPage/ExpenseItem";
 import DashboardHeader from "../components/dashboardPage/DashboardHeader";
-import AddExpensePopup from "../components/dashboardPage/AddExpensePopup";
+import AddExpensePopup from "../components/dashboardPage/AddExpensePopup/AddExpensePopup";
 import { getExpensesByPeriod } from "../data/expenses";
-import type { AddExpenseFormValues } from "../components/dashboardPage/AddExpensePopup";
+import { formatExpenseDate } from "../utils/expenseUtils";
+import type { AddExpenseFormValues } from "../types/addExpensePopupTypes";
 import type { FilterPeriod } from "../components/dashboardPage/DashboardHeader";
+
+const ITEMS_PER_PAGE = 10;
 
 const DashboardPage = () => {
 	const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-	const [selectedFilter, setSelectedFilter] = useState<FilterPeriod>('this-month');
+	const [selectedFilter, setSelectedFilter] =
+		useState<FilterPeriod>("this-month");
 	const [refreshTrigger, setRefreshTrigger] = useState(0);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [isLoading, setIsLoading] = useState(false);
+	const [hasMore, setHasMore] = useState(true);
+	const observerRef = useRef<IntersectionObserver | null>(null);
+	const loadMoreRef = useRef<HTMLDivElement>(null);
 
 	// Use useMemo to optimize filtering performance
-	const expenses = useMemo(() => {
+	const allExpenses = useMemo(() => {
 		return getExpensesByPeriod(selectedFilter);
 	}, [selectedFilter, refreshTrigger]);
+
+	// Get paginated expenses
+	const expenses = useMemo(() => {
+		return allExpenses.slice(0, currentPage * ITEMS_PER_PAGE);
+	}, [allExpenses, currentPage]);
+
+	// Check if there are more items to load
+	useEffect(() => {
+		setHasMore(expenses.length < allExpenses.length);
+	}, [expenses.length, allExpenses.length]);
+
+	// Reset pagination when filter changes
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [selectedFilter]);
+
+	// Intersection Observer for infinite scroll
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting && hasMore && !isLoading) {
+					loadMore();
+				}
+			},
+			{ threshold: 0.1 }
+		);
+
+		observerRef.current = observer;
+
+		if (loadMoreRef.current) {
+			observer.observe(loadMoreRef.current);
+		}
+
+		return () => {
+			if (observerRef.current) {
+				observerRef.current.disconnect();
+			}
+		};
+	}, [hasMore, isLoading]);
+
+	const loadMore = useCallback(() => {
+		if (isLoading || !hasMore) return;
+
+		setIsLoading(true);
+		// Simulate loading delay for better UX
+		setTimeout(() => {
+			setCurrentPage((prev) => prev + 1);
+			setIsLoading(false);
+		}, 500);
+	}, [isLoading, hasMore]);
 
 	const handleAddExpense = (values: AddExpenseFormValues) => {
 		console.log("New expense added:", values);
 		// Force re-evaluation by incrementing refresh trigger
-		setRefreshTrigger(prev => prev + 1);
+		setRefreshTrigger((prev) => prev + 1);
+		// Reset to first page when new expense is added
+		setCurrentPage(1);
+		// Force immediate re-render of expenses list
+		setTimeout(() => {
+			setRefreshTrigger((prev) => prev + 1);
+		}, 100);
 	};
 
 	const handleFilterChange = (filter: FilterPeriod) => {
-		console.log('Filter changing from', selectedFilter, 'to', filter);
+		console.log("Filter changing from", selectedFilter, "to", filter);
 		setSelectedFilter(filter);
-	};
-
-	const formatDate = (dateString: string): string => {
-		const date = new Date(dateString);
-		const now = new Date();
-		const diffTime = Math.abs(now.getTime() - date.getTime());
-		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-		if (diffDays === 0) {
-			return (
-				"Today " +
-				date.toLocaleTimeString("en-US", {
-					hour: "numeric",
-					minute: "2-digit",
-					hour12: true,
-				})
-			);
-		} else if (diffDays === 1) {
-			return (
-				"Yesterday " +
-				date.toLocaleTimeString("en-US", {
-					hour: "numeric",
-					minute: "2-digit",
-					hour12: true,
-				})
-			);
-		} else if (diffDays < 7) {
-			return `${diffDays} days ago`;
-		} else {
-			return date.toLocaleDateString("en-US", {
-				month: "short",
-				day: "numeric",
-			});
-		}
 	};
 
 	return (
 		<div className="min-h-screen bg-white overflow-x-hidden">
-			<DashboardHeader 
+			<DashboardHeader
 				selectedFilter={selectedFilter}
 				onFilterChange={handleFilterChange}
+				refreshTrigger={refreshTrigger}
 			/>
 
 			{/* Recent Expenses Section */}
-			<div className="px-4 pt-[6.5rem] pb-6">
+			<div className="px-4 md:px-[10rem] lg:px-[15rem] pt-[6.5rem] pb-24">
 				<div className="flex justify-between items-center mb-4">
 					<h3 className="text-lg font-semibold text-gray-900">
 						Recent Expenses
 					</h3>
-					<button className="text-primary text-sm font-medium">see all</button>
+					{/* <button className="text-primary text-sm font-medium">see all</button> */}
 				</div>
 
 				<div className="space-y-4">
 					{expenses.length > 0 ? (
-						expenses.map((expense) => (
-							<ExpenseItem
-								key={expense.id}
-								typeId={expense.category}
-								amount={expense.amount}
-								date={formatDate(expense.date)}
-								entryType="Manually"
-							/>
-						))
+						<>
+							{expenses.map((expense) => (
+								<ExpenseItem
+									key={expense.id}
+									typeId={expense.category}
+									amount={expense.amount}
+									currency={expense.currency}
+									date={formatExpenseDate(expense.date)}
+									entryType="Manually"
+									currencyConversion={expense.currencyConversion}
+								/>
+							))}
+
+							{/* Load More Section */}
+							{hasMore && (
+								<div ref={loadMoreRef} className="py-4 text-center">
+									{isLoading ? (
+										<div className="flex items-center justify-center space-x-2">
+											<div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+											<span className="text-sm text-gray-600">
+												Loading more expenses...
+											</span>
+										</div>
+									) : (
+										<button
+											onClick={loadMore}
+											className="text-primary text-sm font-medium hover:text-primary/80 transition-colors"
+										>
+											Load More
+										</button>
+									)}
+								</div>
+							)}
+
+							{/* End of list indicator */}
+							{!hasMore && expenses.length > 0 && (
+								<div className="py-4 text-center">
+									<span className="text-sm text-gray-400">
+										You've reached the end
+									</span>
+								</div>
+							)}
+						</>
 					) : (
 						<div className="text-center py-8 text-gray-500">
 							<svg

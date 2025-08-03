@@ -6,9 +6,10 @@ export type FilterPeriod = 'today' | 'this-week' | 'this-month' | 'this-year' | 
 interface DashboardHeaderProps {
   selectedFilter: FilterPeriod;
   onFilterChange: (filter: FilterPeriod) => void;
+  refreshTrigger: number; // Add this prop
 }
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({ selectedFilter, onFilterChange }) => {
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({ selectedFilter, onFilterChange, refreshTrigger }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +40,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ selectedFilter, onFil
 
   return (
     <div className="dashboard-header-container relative" key={selectedFilter}>
-      <div className="bg-gradient-to-br from-blue-600 to-blue-700 min-h-[20rem] rounded-b-2xl pt-6 px-6 relative shadow-lg">
+      <div className="bg-gradient-to-br from-blue-600 to-blue-700 min-h-[20rem] rounded-b-2xl pt-6 px-6 md:px-[10rem] lg:px-[15rem] relative shadow-lg">
         {/* Background Pattern */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
@@ -58,12 +59,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ selectedFilter, onFil
           {/* Filter Dropdown */}
           <div className="relative" ref={filterRef}>
             <button 
-              className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-3 py-2 rounded-lg hover:bg-white/30 transition-colors"
+              className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
             >
-              <span className="text-sm font-medium text-white">{getFilterLabel(selectedFilter)}</span>
+              <span className="text-sm font-medium text-gray-700">{getFilterLabel(selectedFilter)}</span>
               <svg
-                className={`w-4 h-4 text-white transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -103,7 +104,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ selectedFilter, onFil
         </div>
         
         {/* Total Balance Card - Second Blue Card */}
-        <DashboardHeaderDetails selectedFilter={selectedFilter} />
+        <DashboardHeaderDetails selectedFilter={selectedFilter} refreshTrigger={refreshTrigger} />
       </div>
     </div>
   );
