@@ -73,7 +73,7 @@ describe('Expense Validation', () => {
       await AddExpenseSchema.validate(invalidExpense);
       fail('Should have thrown an error');
     } catch (error: any) {
-      expect(error.message).toContain('Please enter a valid number');
+      expect(error.message).toContain('Amount must be positive');
     }
   });
 
