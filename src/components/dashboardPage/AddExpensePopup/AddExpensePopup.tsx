@@ -8,7 +8,7 @@ import { generateCategoryId } from "../../../utils/categoryUtils";
 import AddCategoryPopup from "../AddCategoryPopup/AddCategoryPopup";
 import type { AddCategoryFormValues } from "../../../types/addCategoryPopupTypes";
 import type { AddExpensePopupProps, AddExpenseFormValues } from "../../../types/addExpensePopupTypes";
-import { AddExpenseSchema, initialValues } from "../../../schemas/addExpensePopupSchema";
+import { initialValues } from "../../../schemas/addExpensePopupSchema";
 import { fileToBase64 } from "../../../utils/fileUtils";
 import MobileHeader from "./MobileHeader";
 import ExpenseForm from "./ExpenseForm";
